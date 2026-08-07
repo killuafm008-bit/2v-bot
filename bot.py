@@ -106,42 +106,28 @@ async def on_ready():
         )
 
 
-    # دخول روم AFK
-    voice_channel = bot.get_channel(
-        VOICE_CHANNEL_ID
-    )
+    # ==============================
+# دخول روم AFK
+# ==============================
 
-    if voice_channel is not None:
+try:
+    voice_channel = await bot.fetch_channel(VOICE_CHANNEL_ID)
 
-        voice_client = voice_channel.guild.voice_client
+    if isinstance(voice_channel, discord.VoiceChannel):
 
-        if voice_client is None:
+        if voice_channel.guild.voice_client is None:
 
-            try:
-
-                await voice_channel.connect()
-
-                print(
-                    f"دخلت الروم الصوتي: {voice_channel.name}"
-                )
-
-            except Exception as e:
-
-                print(
-                    f"خطأ في دخول الروم الصوتي: {e}"
-                )
-
+            await voice_channel.connect()
+            print(f"✅ دخلت الروم الصوتي: {voice_channel.name}")
 
         else:
+            print("✅ البوت موجود بالفعل في الروم الصوتي")
 
-            print(
-                "البوت موجود بالفعل في الروم الصوتي."
-            )
+    else:
+        print("❌ الآيدي ليس روم صوتي")
 
-
-    print(
-        f"{bot.user} شغال!"
-    )
+except Exception as e:
+    print(f"❌ خطأ دخول الفويس: {e}")
 
 
 # ==============================
