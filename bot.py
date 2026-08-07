@@ -2,10 +2,12 @@
 # مكتبات ديسكورد
 # ==============================
 
+import os
 import discord
 from discord.ext import commands
 from discord import app_commands
 
+from keep_alive import keep_alive
 
 # ==============================
 # مكتبات الصور
@@ -568,6 +570,6 @@ async def on_member_join(member):
 
 
 # تشغيل البوت
-import os
 
+keep_alive()
 bot.run(os.getenv("TOKEN"))
