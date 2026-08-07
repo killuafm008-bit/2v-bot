@@ -34,6 +34,16 @@ intents.members = True
 # إنشاء البوت
 # ==============================
 
+bot = commands.Bot(
+    command_prefix="!",
+    intents=intents
+)
+
+
+# ==============================
+# أمر دخول الفويس
+# ==============================
+
 @bot.tree.command(
     name="join",
     description="دخول رومك الصوتي"
@@ -49,20 +59,29 @@ async def join(
         )
         return
 
+
     channel = interaction.user.voice.channel
 
+
     if interaction.guild.voice_client is None:
+
         await channel.connect()
+
         await interaction.response.send_message(
             f"✅ دخلت روم: {channel.name}"
         )
 
+
     else:
-        await interaction.guild.voice_client.move_to(channel)
+
+        await interaction.guild.voice_client.move_to(
+            channel
+        )
+
         await interaction.response.send_message(
             "✅ تم نقل البوت للروم"
         )
-        
+
 
 # ==============================
 # آيديات الرتب
@@ -83,7 +102,7 @@ WELCOME_CHANNEL_ID = 1523760707047391332
 
 
 # ==============================
-# آيدي الروم الصوتي AFK
+# آيدي الروم الصوتي
 # ==============================
 
 VOICE_CHANNEL_ID = 1524099778861072444
@@ -96,6 +115,7 @@ VOICE_CHANNEL_ID = 1524099778861072444
 invites = {}
 
 
+
 # ==============================
 # عند تشغيل البوت
 # ==============================
@@ -103,17 +123,24 @@ invites = {}
 @bot.event
 async def on_ready():
 
+
     # حفظ الدعوات
+
     for guild in bot.guilds:
 
         try:
+
             invites[guild.id] = await guild.invites()
 
+
         except discord.Forbidden:
+
             invites[guild.id] = []
 
 
-    # مزامنة Slash Commands
+
+    # مزامنة الأوامر
+
     try:
 
         synced = await bot.tree.sync()
@@ -122,50 +149,47 @@ async def on_ready():
             f"تم مزامنة {len(synced)} أمر Slash"
         )
 
+
     except Exception as e:
 
         print(
-            f"خطأ في مزامنة الأوامر: {e}"
+            f"خطأ مزامنة الأوامر: {e}"
         )
 
 
-    # ==============================
-    # دخول روم AFK
-    # ==============================
+
+    # دخول الروم الصوتي تلقائي
 
     try:
 
-        voice_channel = await bot.fetch_channel(
+        voice_channel = bot.get_channel(
             VOICE_CHANNEL_ID
         )
 
 
-        if isinstance(
-            voice_channel,
-            discord.VoiceChannel
-        ):
+        if voice_channel is None:
+
+            print(
+                "❌ لم أجد روم الفويس"
+            )
+
+            return
 
 
-            if voice_channel.guild.voice_client is None:
 
-                await voice_channel.connect()
+        if voice_channel.guild.voice_client is None:
 
-                print(
-                    f"✅ دخلت الروم الصوتي: {voice_channel.name}"
-                )
+            await voice_channel.connect()
 
-
-            else:
-
-                print(
-                    "✅ البوت موجود بالفعل في الروم الصوتي"
-                )
+            print(
+                f"✅ دخلت الفويس: {voice_channel.name}"
+            )
 
 
         else:
 
             print(
-                "❌ الآيدي ليس روم صوتي"
+                "✅ البوت موجود في الفويس"
             )
 
 
@@ -176,12 +200,13 @@ async def on_ready():
         )
 
 
+
     print(
         f"{bot.user} شغال!"
     )
 
 # ==============================
-# أمر التحقق القديم !verify
+# أمر التحقق !verify
 # ==============================
 
 @bot.command()
@@ -193,9 +218,9 @@ async def verify(ctx):
     )
 
 
+
 # ==================================================
 # أمر /kick
-# يعمل فقط لمن لديه Administrator
 # ==================================================
 
 @bot.tree.command(
@@ -221,22 +246,24 @@ async def kick(
             reason=reason
         )
 
+
         await interaction.response.send_message(
             f"👢 تم طرد {member.mention}\n"
             f"📝 السبب: {reason}"
         )
 
+
     except discord.Forbidden:
 
         await interaction.response.send_message(
-            "❌ ما أقدر أطرد هذا العضو. تأكد أن رتبة البوت أعلى من رتبته.",
+            "❌ لا أستطيع طرد هذا العضو.",
             ephemeral=True
         )
 
 
+
 # ==================================================
 # أمر /ban
-# يعمل فقط لمن لديه Administrator
 # ==================================================
 
 @bot.tree.command(
@@ -262,41 +289,43 @@ async def ban(
             reason=reason
         )
 
+
         await interaction.response.send_message(
             f"🔨 تم حظر {member.mention}\n"
             f"📝 السبب: {reason}"
         )
 
+
     except discord.Forbidden:
 
         await interaction.response.send_message(
-            "❌ ما أقدر أحظر هذا العضو. تأكد أن رتبة البوت أعلى من رتبته.",
+            "❌ لا أستطيع حظر هذا العضو.",
             ephemeral=True
         )
 
 
+
 # ==================================================
 # أمر /clear
-# يعمل فقط لمن لديه Administrator
 # ==================================================
 
 @bot.tree.command(
     name="clear",
-    description="حذف عدد من الرسائل"
+    description="حذف الرسائل"
 )
 @app_commands.checks.has_permissions(
     administrator=True
 )
 @app_commands.describe(
-    amount="عدد الرسائل التي تريد حذفها"
+    amount="عدد الرسائل"
 )
 async def clear(
     interaction: discord.Interaction,
-    amount: app_commands.Range[int, 1, 100]
+    amount: app_commands.Range[int,1,100]
 ):
 
     await interaction.response.send_message(
-        f"🧹 جاري حذف {amount} رسالة...",
+        "🧹 جاري الحذف...",
         ephemeral=True
     )
 
@@ -309,19 +338,20 @@ async def clear(
 
 
         await interaction.edit_original_response(
-            content=f"✅ تم حذف {len(deleted)} رسالة."
+            content=f"✅ تم حذف {len(deleted)} رسالة"
         )
 
 
     except discord.Forbidden:
 
         await interaction.edit_original_response(
-            content="❌ البوت لا يملك صلاحية حذف الرسائل."
+            content="❌ لا توجد صلاحية حذف"
         )
 
 
+
 # ==================================================
-# معالجة أخطاء أوامر Slash
+# معالجة أخطاء السلاش
 # ==================================================
 
 @bot.tree.error
@@ -335,28 +365,35 @@ async def on_app_command_error(
         app_commands.MissingPermissions
     ):
 
+
         if interaction.response.is_done():
 
             await interaction.followup.send(
-                "❌ هذا الأمر للإداريين فقط.",
+                "❌ هذا الأمر للإداريين فقط",
                 ephemeral=True
             )
+
 
         else:
 
             await interaction.response.send_message(
-                "❌ هذا الأمر للإداريين فقط.",
+                "❌ هذا الأمر للإداريين فقط",
                 ephemeral=True
             )
+
 
         return
 
 
+
     print(
-        f"Slash Command Error: {error}"
+        f"Slash Error: {error}"
     )
-    # ==============================
-# الترحيب عند دخول عضو جديد
+
+
+
+# ==============================
+# الترحيب عند دخول عضو
 # ==============================
 
 @bot.event
@@ -366,27 +403,32 @@ async def on_member_join(member):
         WELCOME_CHANNEL_ID
     )
 
+
     if channel is None:
+
         return
+
 
 
     frames = []
 
 
-    # فتح الخلفية المتحركة
     background = Image.open(
         "VV2.gif"
     )
 
 
-    # تحميل أفتار العضو
+
     async with aiohttp.ClientSession() as session:
+
 
         async with session.get(
             member.display_avatar.url
         ) as resp:
 
+
             avatar_bytes = await resp.read()
+
 
 
     avatar = Image.open(
@@ -394,39 +436,42 @@ async def on_member_join(member):
     ).convert("RGBA")
 
 
+
     avatar = avatar.resize(
-        (220, 220)
+        (220,220)
     )
+
 
 
     mask = Image.new(
         "L",
-        (220, 220),
+        (220,220),
         0
     )
 
-    mask_draw = ImageDraw.Draw(mask)
 
-    mask_draw.ellipse(
-        (0, 0, 220, 220),
+    ImageDraw.Draw(mask).ellipse(
+        (0,0,220,220),
         fill=255
     )
 
 
+
     border = Image.new(
         "RGBA",
-        (240, 240),
-        (0, 0, 0, 0)
+        (240,240),
+        (0,0,0,0)
     )
 
-    border_draw = ImageDraw.Draw(border)
 
-    border_draw.ellipse(
-        (5, 5, 235, 235),
-        outline=(75, 0, 130, 255),
+    ImageDraw.Draw(border).ellipse(
+        (5,5,235,235),
+        outline=(75,0,130,255),
         width=8
     )
-
+    # ==============================
+    # الخطوط
+    # ==============================
 
     try:
 
@@ -440,11 +485,17 @@ async def on_member_join(member):
             45
         )
 
+
     except:
 
         font = None
         small_font = None
 
+
+
+    # ==============================
+    # معرفة صاحب الدعوة
+    # ==============================
 
     inviter = "غير معروف"
 
@@ -459,9 +510,11 @@ async def on_member_join(member):
 
         new_invites = await member.guild.invites()
 
+
     except discord.Forbidden:
 
         new_invites = []
+
 
 
     for old in old_invites:
@@ -480,58 +533,84 @@ async def on_member_join(member):
                 break
 
 
+
     invites[member.guild.id] = new_invites
 
 
-    for frame in ImageSequence.Iterator(background):
 
-        img = frame.convert("RGBA")
+    # ==============================
+    # تجهيز الفريمات
+    # ==============================
+
+    for frame in ImageSequence.Iterator(
+        background
+    ):
+
+
+        img = frame.convert(
+            "RGBA"
+        )
+
 
         img = img.resize(
-            (1261, 709)
+            (1261,709)
         )
+
 
 
         img.paste(
             avatar,
-            (520, 100),
+            (520,100),
             mask
         )
 
 
         img.paste(
             border,
-            (510, 90),
+            (510,90),
             border
         )
 
 
-        draw = ImageDraw.Draw(img)
+
+        draw = ImageDraw.Draw(
+            img
+        )
+
 
 
         draw.text(
-            (630, 390),
+            (630,390),
             f"👋 {member.name}",
             anchor="mm",
             font=font,
-            fill=(255, 255, 255)
+            fill=(255,255,255)
         )
+
 
 
         draw.text(
-            (630, 470),
+            (630,470),
             "Welcome To Server ✨",
             anchor="mm",
             font=small_font,
-            fill=(75, 0, 130)
+            fill=(75,0,130)
         )
 
 
-        frames.append(img)
+
+        frames.append(
+            img
+        )
 
 
+
+    # ==============================
+    # حفظ GIF
+    # ==============================
 
     with io.BytesIO() as gif_binary:
+
 
         frames[0].save(
             gif_binary,
@@ -546,7 +625,9 @@ async def on_member_join(member):
         )
 
 
+
         gif_binary.seek(0)
+
 
 
         file = discord.File(
@@ -555,8 +636,9 @@ async def on_member_join(member):
         )
 
 
+
         await channel.send(
-            f"👋 أهلاً بك {member.mention} في السيرفر ✨\n"
+            f"👋 أهلاً بك {member.mention} ✨\n"
             f"📨 تمت دعوتك بواسطة: {inviter}",
             file=file
         )
@@ -566,10 +648,10 @@ async def on_member_join(member):
 # ==============================
 # تشغيل البوت
 # ==============================
-import os
+
 keep_alive()
+
 
 bot.run(
     os.getenv("TOKEN")
 )
-
