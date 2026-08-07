@@ -568,4 +568,6 @@ async def on_member_join(member):
 
 
 # تشغيل البوت
-bot.run("MTUzNTIzMzA1NTMxMTE0MjkxMg.GSptlC.Cs9ibT7QZAow6CQbDczmd4yNltQ5B3ZHft-kmw")
+import os
+
+bot.run(os.getenv("TOKEN"))
