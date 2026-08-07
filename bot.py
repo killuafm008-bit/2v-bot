@@ -34,26 +34,34 @@ intents.members = True
 # إنشاء البوت
 # ==============================
 
-bot = commands.Bot(
-    command_prefix="!",
-    intents=intents
+@bot.tree.command(
+    name="join",
+    description="دخول رومك الصوتي"
 )
-@bot.command()
-async def join(ctx):
+async def join(
+    interaction: discord.Interaction
+):
 
-    if ctx.author.voice is None:
-        await ctx.send("❌ ادخل روم صوتي أولاً")
+    if interaction.user.voice is None:
+        await interaction.response.send_message(
+            "❌ ادخل روم صوتي أولاً",
+            ephemeral=True
+        )
         return
 
-    channel = ctx.author.voice.channel
+    channel = interaction.user.voice.channel
 
-    if ctx.voice_client is None:
+    if interaction.guild.voice_client is None:
         await channel.connect()
-        await ctx.send(f"✅ دخلت روم: {channel.name}")
+        await interaction.response.send_message(
+            f"✅ دخلت روم: {channel.name}"
+        )
 
     else:
-        await ctx.voice_client.move_to(channel)
-        await ctx.send("✅ نقلت للروم الجديد")
+        await interaction.guild.voice_client.move_to(channel)
+        await interaction.response.send_message(
+            "✅ تم نقل البوت للروم"
+        )
         
 
 # ==============================
@@ -558,7 +566,7 @@ async def on_member_join(member):
 # ==============================
 # تشغيل البوت
 # ==============================
-
+import os
 keep_alive()
 
 bot.run(
