@@ -331,4 +331,221 @@ async def on_app_command_error(
     print(
         f"Slash Command Error: {error}"
     )
-    
+    # ==============================
+# الترحيب عند دخول عضو جديد
+# ==============================
+
+@bot.event
+async def on_member_join(member):
+
+    channel = member.guild.get_channel(
+        WELCOME_CHANNEL_ID
+    )
+
+    if channel is None:
+        return
+
+
+    frames = []
+
+
+    # فتح الخلفية المتحركة
+    background = Image.open(
+        "VV2.gif"
+    )
+
+
+    # تحميل أفتار العضو
+    async with aiohttp.ClientSession() as session:
+
+        async with session.get(
+            member.display_avatar.url
+        ) as resp:
+
+            avatar_bytes = await resp.read()
+
+
+    avatar = Image.open(
+        io.BytesIO(avatar_bytes)
+    ).convert("RGBA")
+
+
+    avatar = avatar.resize(
+        (220, 220)
+    )
+
+
+    mask = Image.new(
+        "L",
+        (220, 220),
+        0
+    )
+
+    mask_draw = ImageDraw.Draw(mask)
+
+    mask_draw.ellipse(
+        (0, 0, 220, 220),
+        fill=255
+    )
+
+
+    border = Image.new(
+        "RGBA",
+        (240, 240),
+        (0, 0, 0, 0)
+    )
+
+    border_draw = ImageDraw.Draw(border)
+
+    border_draw.ellipse(
+        (5, 5, 235, 235),
+        outline=(75, 0, 130, 255),
+        width=8
+    )
+
+
+    try:
+
+        font = ImageFont.truetype(
+            "arialbd.ttf",
+            70
+        )
+
+        small_font = ImageFont.truetype(
+            "arialbd.ttf",
+            45
+        )
+
+    except:
+
+        font = None
+        small_font = None
+
+
+    inviter = "غير معروف"
+
+
+    old_invites = invites.get(
+        member.guild.id,
+        []
+    )
+
+
+    try:
+
+        new_invites = await member.guild.invites()
+
+    except discord.Forbidden:
+
+        new_invites = []
+
+
+    for old in old_invites:
+
+        for new in new_invites:
+
+            if (
+                old.code == new.code
+                and new.uses > old.uses
+            ):
+
+                if new.inviter:
+
+                    inviter = new.inviter.mention
+
+                break
+
+
+    invites[member.guild.id] = new_invites
+
+
+    for frame in ImageSequence.Iterator(background):
+
+        img = frame.convert("RGBA")
+
+        img = img.resize(
+            (1261, 709)
+        )
+
+
+        img.paste(
+            avatar,
+            (520, 100),
+            mask
+        )
+
+
+        img.paste(
+            border,
+            (510, 90),
+            border
+        )
+
+
+        draw = ImageDraw.Draw(img)
+
+
+        draw.text(
+            (630, 390),
+            f"👋 {member.name}",
+            anchor="mm",
+            font=font,
+            fill=(255, 255, 255)
+        )
+
+
+        draw.text(
+            (630, 470),
+            "Welcome To Server ✨",
+            anchor="mm",
+            font=small_font,
+            fill=(75, 0, 130)
+        )
+
+
+        frames.append(img)
+
+
+
+    with io.BytesIO() as gif_binary:
+
+        frames[0].save(
+            gif_binary,
+            format="GIF",
+            save_all=True,
+            append_images=frames[1:],
+            duration=background.info.get(
+                "duration",
+                80
+            ),
+            loop=0
+        )
+
+
+        gif_binary.seek(0)
+
+
+        file = discord.File(
+            gif_binary,
+            filename="welcome.gif"
+        )
+
+
+        await channel.send(
+            f"👋 أهلاً بك {member.mention} في السيرفر ✨\n"
+            f"📨 تمت دعوتك بواسطة: {inviter}",
+            file=file
+        )
+
+
+
+# ==============================
+# تشغيل البوت
+# ==============================
+
+keep_alive()
+
+bot.run(
+    os.getenv("TOKEN")
+)
+
