@@ -38,7 +38,23 @@ bot = commands.Bot(
     command_prefix="!",
     intents=intents
 )
+@bot.command()
+async def join(ctx):
 
+    if ctx.author.voice is None:
+        await ctx.send("❌ ادخل روم صوتي أولاً")
+        return
+
+    channel = ctx.author.voice.channel
+
+    if ctx.voice_client is None:
+        await channel.connect()
+        await ctx.send(f"✅ دخلت روم: {channel.name}")
+
+    else:
+        await ctx.voice_client.move_to(channel)
+        await ctx.send("✅ نقلت للروم الجديد")
+        
 
 # ==============================
 # آيديات الرتب
