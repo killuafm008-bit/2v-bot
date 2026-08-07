@@ -48,40 +48,31 @@ bot = commands.Bot(
     name="join",
     description="دخول رومك الصوتي"
 )
-async def join(
-    interaction: discord.Interaction
-):
+async def join(interaction: discord.Interaction):
+
+    await interaction.response.defer()
 
     if interaction.user.voice is None:
-        await interaction.response.send_message(
-            "❌ ادخل روم صوتي أولاً",
-            ephemeral=True
-        )
+        await interaction.followup.send("❌ ادخل روم صوتي أولاً")
         return
-
 
     channel = interaction.user.voice.channel
 
+    try:
+        if interaction.guild.voice_client is None:
+            await channel.connect()
+        else:
+            await interaction.guild.voice_client.move_to(channel)
 
-    if interaction.guild.voice_client is None:
-
-        await channel.connect()
-
-        await interaction.response.send_message(
+        await interaction.followup.send(
             f"✅ دخلت روم: {channel.name}"
         )
 
-
-    else:
-
-        await interaction.guild.voice_client.move_to(
-            channel
+    except Exception as e:
+        print(f"JOIN ERROR: {e}")
+        await interaction.followup.send(
+            f"❌ صار خطأ: {e}"
         )
-
-        await interaction.response.send_message(
-            "✅ تم نقل البوت للروم"
-        )
-
 
 # ==============================
 # آيديات الرتب
