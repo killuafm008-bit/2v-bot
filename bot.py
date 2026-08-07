@@ -651,5 +651,4 @@ async def on_member_join(member):
 
 keep_alive()
 
-
-bot.run("MTUzNTIzMzA1NTMxMTE0MjkxMg.GJPkzX.pBh4dKa2M3iSAZNuXyYNf_Mn3FRU7jy41t2Vhs")
+bot.run(os.getenv("TOKEN"))
